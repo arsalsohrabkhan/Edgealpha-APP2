@@ -92,7 +92,7 @@ class _TradesScreenState extends State<TradesScreen> {
               // Trade list
               Expanded(
                 child: trades.isEmpty
-                    ? Center(child: Text('No ${ _filter == 'All' ? '' : _filter + ' '}trades found.', style: AETheme.syne(size: 13, color: AETheme.muted)))
+                    ? Center(child: Text('No ${_filter == 'All' ? '' : '$_filter '}trades found.', style: AETheme.syne(size: 13, color: AETheme.muted)))
                     : ListView.builder(
                         padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
                         itemCount: trades.length,
@@ -147,7 +147,7 @@ class _TradeCardState extends State<_TradeCard> {
                 : const Color(0x12070921),
           ),
           boxShadow: [BoxShadow(
-            color: Colors.black.withOpacity(_hovered ? 0.08 : 0.03),
+            color: Colors.black.withValues(alpha: _hovered ? 0.08 : 0.03),
             blurRadius: _hovered ? 24 : 10,
             offset: const Offset(0, 3),
           )],
