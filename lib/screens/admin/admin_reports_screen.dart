@@ -93,7 +93,7 @@ class _ClientReportCardState extends State<_ClientReportCard> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: _hovered ? const Color(0x304F46E5) : const Color(0x10070921)),
           boxShadow: [BoxShadow(
-            color: Colors.black.withOpacity(_hovered ? 0.08 : 0.03),
+            color: Colors.black.withValues(alpha: _hovered ? 0.08 : 0.03),
             blurRadius: _hovered ? 20 : 8,
             offset: const Offset(0, 3),
           )],
@@ -230,7 +230,7 @@ class _ClientReportCardState extends State<_ClientReportCard> {
         ['Short Trades',   '${c.trades.where((t) => !t.isLong).length}'],
         ['Best Trade',     '+${c.trades.map((t) => t.pct).fold(0.0, (a, b) => a > b ? a : b)}%'],
         ['Worst Trade',    '${c.trades.map((t) => t.pct).fold(0.0, (a, b) => a < b ? a : b)}%'],
-        ...c.allocation.map((a) => ['${a.label}', '${a.pct}%']),
+        ...c.allocation.map((a) => ['\${a.label}', '\${a.pct}%']),
       ],
     );
   }
@@ -385,7 +385,7 @@ class _ReportBtn extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: gradient,
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
