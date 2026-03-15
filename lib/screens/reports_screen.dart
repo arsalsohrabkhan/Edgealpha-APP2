@@ -23,36 +23,32 @@ class ReportsScreen extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _ReportCard(
+            _ReportCard(
                   icon: '📄',
                   title: 'Account Summary',
                   desc: 'Full account overview with current value, capital, total P&L, win rate, and key performance metrics.',
                   color: AETheme.indigo2,
                   gradient: AETheme.indigoGradient,
                   onGenerate: () => _showSummary(context, C, fmt),
-                )),
-                const SizedBox(width: 16),
-                Expanded(child: _ReportCard(
+                ),
+                const SizedBox(height: 14),
+                _ReportCard(
                   icon: '📊',
                   title: 'Trade History',
                   desc: 'Complete log of all closed trades with asset, direction, P&L, return %, open and close dates.',
                   color: AETheme.green,
                   gradient: AETheme.greenGradient,
                   onGenerate: () => _showTradeHistory(context, C, fmt),
-                )),
-                const SizedBox(width: 16),
-                Expanded(child: _ReportCard(
+                ),
+                const SizedBox(height: 14),
+                _ReportCard(
                   icon: '📈',
                   title: 'Performance Report',
                   desc: 'Sharpe ratio, max drawdown, long/short breakdown, per-asset attribution and equity curve data.',
                   color: AETheme.amber,
                   gradient: AETheme.amberGradient,
                   onGenerate: () => _showPerformance(context, C),
-                )),
-              ],
+                ),
             ),
           ],
         ),
@@ -189,8 +185,8 @@ class _ReportCardState extends State<_ReportCard> {
         decoration: BoxDecoration(
           color: AETheme.white,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: _hovered ? widget.color.withOpacity(0.3) : const Color(0x12070921)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(_hovered ? 0.08 : 0.04), blurRadius: _hovered ? 24 : 12, offset: const Offset(0, 4))],
+          border: Border.all(color: _hovered ? widget.color.withValues(alpha: 0.3) : const Color(0x12070921)),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: _hovered ? 0.08 : 0.04), blurRadius: _hovered ? 24 : 12, offset: const Offset(0, 4))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

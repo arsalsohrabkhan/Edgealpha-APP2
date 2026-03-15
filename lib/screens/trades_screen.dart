@@ -46,14 +46,17 @@ class _TradesScreenState extends State<TradesScreen> {
               Container(
                 color: AETheme.white,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                child: Row(
-                  children: [
-                    _SummaryPill('${C.trades.length} Trades', AETheme.ink, const Color(0x0A070921)),
-                    const SizedBox(width: 8),
-                    _SummaryPill('${C.wins}W · ${C.losses}L', AETheme.green, const Color(0x14047857)),
-                    const SizedBox(width: 8),
-                    _SummaryPill('${C.winRate}% Win Rate', AETheme.amber, const Color(0x14B45309)),
-                  ],
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _SummaryPill('${C.trades.length} Trades', AETheme.ink, const Color(0x0A070921)),
+                      const SizedBox(width: 8),
+                      _SummaryPill('${C.wins}W · ${C.losses}L', AETheme.green, const Color(0x14047857)),
+                      const SizedBox(width: 8),
+                      _SummaryPill('${C.winRate}% Win Rate', AETheme.amber, const Color(0x14B45309)),
+                    ],
+                  ),
                 ),
               ),
               // Filter chips
