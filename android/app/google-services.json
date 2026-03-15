@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1060470776027",
+    "project_id": "alphaedge-993e2",
+    "storage_bucket": "alphaedge-993e2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1060470776027:android:ec91a060348c9cd616ecfe",
+        "android_client_info": {
+          "package_name": "com.alphaedge.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEOwy9--pCRBU2RxVcEpXp4NBmQQncUqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1060470776027:android:553711e4a9fe7e5716ecfe",
+        "android_client_info": {
+          "package_name": "com.alphaedge.capital"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEOwy9--pCRBU2RxVcEpXp4NBmQQncUqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
