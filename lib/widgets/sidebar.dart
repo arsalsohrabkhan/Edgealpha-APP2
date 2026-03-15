@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../services/firebase_service.dart';
-import '../models/client_model.dart';
 import '../theme/app_theme.dart';
 
 class AESidebar extends StatelessWidget {
@@ -244,8 +243,7 @@ class AETopBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
-    final dateStr = _weekday(now.weekday) + ', '
-        + _month(now.month) + ' ${now.day}, ${now.year}';
+    final dateStr = '${_weekday(now.weekday)}, ${_month(now.month)} ${now.day}, ${now.year}';
 
     return Container(
       height: 60,
