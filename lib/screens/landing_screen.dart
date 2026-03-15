@@ -263,7 +263,7 @@ class _HeroDashCard extends StatelessWidget {
         color: const Color(0xD0FFFFFF),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 40, offset: const Offset(0, 20)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 40, offset: const Offset(0, 20)),
         ],
       ),
       child: Column(
@@ -466,9 +466,9 @@ class _FeatureCardState extends State<_FeatureCard> {
           border: Border.all(color: _hovered ? const Color(0x284F46E5) : const Color(0x12070921)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(_hovered ? 0.1 : 0.05),
+              color: Colors.black.withValues(alpha: _hovered ? 0.1 : 0.05),
               blurRadius: _hovered ? 32 : 16,
-              offset: const Offset(0, _hovered ? 8 : 4),
+              offset: Offset(0, _hovered ? 8 : 4),
             ),
           ],
         ),
