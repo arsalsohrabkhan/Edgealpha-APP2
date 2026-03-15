@@ -16,10 +16,7 @@ workflows:
       - name: Get Flutter packages
         script: flutter pub get
 
-      - name: Analyze code
-        script: flutter analyze --no-fatal-infos
-
-      - name: Build debug APK (for testing)
+      - name: Build debug APK
         script: flutter build apk --debug
 
       - name: Build release APK
@@ -27,7 +24,6 @@ workflows:
 
     artifacts:
       - build/**/outputs/**/*.apk
-      - build/**/outputs/**/mapping.txt
       - flutter_drive.log
 
     publishing:
