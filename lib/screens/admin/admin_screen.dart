@@ -131,7 +131,7 @@ class _ClientRowState extends State<_ClientRow> {
           color: _hovered ? const Color(0xFFF8F7FF) : AETheme.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: _hovered ? const Color(0x304F46E5) : const Color(0x10070921)),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(_hovered ? 0.07 : 0.03), blurRadius: _hovered ? 16 : 8, offset: const Offset(0, 3))],
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: _hovered ? 0.07 : 0.03), blurRadius: _hovered ? 16 : 8, offset: const Offset(0, 3))],
         ),
         child: Row(
           children: [
