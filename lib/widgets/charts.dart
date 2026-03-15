@@ -88,8 +88,8 @@ class EquityLineChart extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    lineColor.withOpacity(0.18),
-                    lineColor.withOpacity(0.01),
+                    lineColor.withValues(alpha: 0.18),
+                    lineColor.withValues(alpha: 0.01),
                   ],
                 ),
               ),
@@ -266,7 +266,7 @@ class _StatCardState extends State<StatCard> {
                 duration: const Duration(milliseconds: 350),
                 height: 3,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [widget.accentColor, widget.accentColor.withOpacity(0.5)]),
+                  gradient: LinearGradient(colors: [widget.accentColor, widget.accentColor.withValues(alpha: 0.5)]),
                   borderRadius: const BorderRadius.vertical(bottom: Radius.circular(14)),
                 ),
                 width: _hovered ? double.infinity : 0,
