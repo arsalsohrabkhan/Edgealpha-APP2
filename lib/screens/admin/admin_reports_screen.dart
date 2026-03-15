@@ -51,16 +51,11 @@ class _ReportsBody extends StatelessWidget {
         children: [
           Text('ALL CLIENTS', style: AETheme.syne(size: 9, color: AETheme.muted, weight: FontWeight.w800, letterSpacing: 2)),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 16,
-            runSpacing: 16,
-            children: clients.map((c) {
-              final cardW = (MediaQuery.of(context).size.width - 96) / 3;
-              return SizedBox(
-                width: cardW < 260 ? double.infinity : cardW,
-                child: _ClientReportCard(client: c, fmt: fmt),
-              );
-            }).toList(),
+          Column(
+            children: clients.map((c) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: _ClientReportCard(client: c, fmt: fmt),
+            )).toList(),
           ),
         ],
       ),

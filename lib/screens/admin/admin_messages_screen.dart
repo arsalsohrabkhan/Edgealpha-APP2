@@ -50,6 +50,27 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
                 final clients = snap.data ?? [];
                 final selected = _selectedId != null ? clients.where((c) => c.id == _selectedId).firstOrNull : null;
 
+                final narrow = MediaQuery.of(context).size.width < 700;
+                
+                // On narrow screens: show list or chat, not both
+                if (narrow) {
+                  if (selected != null) {
+                    return _NarrowChat(
+                      selected: selected,
+                      ctrl: _ctrl,
+                      scroll: _scroll,
+                      sending: _sending,
+                      onBack: () => setState(() => _selectedId = null),
+                      onSend: () => _reply(selected.id.toString()),
+                    );
+                  }
+                  return _NarrowClientList(
+                    clients: clients,
+                    selectedId: _selectedId,
+                    onSelect: (id) => setState(() => _selectedId = id),
+                  );
+                }
+
                 return Row(
                   children: [
                     // ── Client list sidebar ──
@@ -294,4 +315,116 @@ class _AdminMsgBubble extends StatelessWidget {
       ),
     );
   }
+}
+
+// ── Narrow (phone) client list ────────────────────────────────
+class _NarrowClientList extends StatelessWidget {
+  final List<Client> clients;
+  final int? selectedId;
+  final void Function(int) onSelect;
+  const _NarrowClientList({required this.clients, required this.selectedId, required this.onSelect});
+  @override
+  Widget build(BuildContext context) => ListView.builder(
+    padding: const EdgeInsets.all(16),
+    itemCount: clients.length,
+    itemBuilder: (_, i) {
+      final c = clients[i];
+      return GestureDetector(
+        onTap: () => onSelect(c.id),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AETheme.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0x10070921)),
+          ),
+          child: Row(children: [
+            CircleAvatar(radius: 20, backgroundColor: Color(c.colorValue),
+                child: Text(c.initials, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800))),
+            const SizedBox(width: 12),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(c.fullName, style: AETheme.syne(size: 13, weight: FontWeight.w800), overflow: TextOverflow.ellipsis),
+              Text(c.messages.isEmpty ? 'No messages' : c.messages.last.text,
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: AETheme.syne(size: 10, color: AETheme.muted, weight: FontWeight.w400)),
+            ])),
+            const Icon(Icons.chevron_right, color: AETheme.faint, size: 20),
+          ]),
+        ),
+      );
+    },
+  );
+}
+
+// ── Narrow (phone) chat view ──────────────────────────────────
+class _NarrowChat extends StatelessWidget {
+  final Client selected;
+  final TextEditingController ctrl;
+  final ScrollController scroll;
+  final bool sending;
+  final VoidCallback onBack, onSend;
+  const _NarrowChat({required this.selected, required this.ctrl, required this.scroll,
+    required this.sending, required this.onBack, required this.onSend});
+  @override
+  Widget build(BuildContext context) => Column(children: [
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: const BoxDecoration(color: AETheme.white, border: Border(bottom: BorderSide(color: Color(0x0C070921)))),
+      child: Row(children: [
+        GestureDetector(onTap: onBack, child: const Icon(Icons.arrow_back_ios, size: 18, color: AETheme.ink)),
+        const SizedBox(width: 10),
+        CircleAvatar(radius: 16, backgroundColor: Color(selected.colorValue),
+            child: Text(selected.initials, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800))),
+        const SizedBox(width: 10),
+        Expanded(child: Text(selected.fullName, style: AETheme.syne(size: 14, weight: FontWeight.w800), overflow: TextOverflow.ellipsis)),
+      ]),
+    ),
+    Expanded(child: ListView.builder(
+      controller: scroll,
+      padding: const EdgeInsets.all(16),
+      itemCount: selected.messages.length,
+      itemBuilder: (_, i) => _AdminMsgBubble(
+        msg: selected.messages[i],
+        clientColor: Color(selected.colorValue),
+        clientInitials: selected.initials,
+      ),
+    )),
+    Container(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+      decoration: const BoxDecoration(color: AETheme.white, border: Border(top: BorderSide(color: Color(0x0C070921)))),
+      child: Row(children: [
+        Expanded(child: Container(
+          decoration: BoxDecoration(color: AETheme.bg, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0x10070921))),
+          child: TextField(
+            controller: ctrl,
+            style: AETheme.syne(size: 13),
+            maxLines: 3, minLines: 1,
+            onSubmitted: (_) => onSend(),
+            decoration: InputDecoration(
+              hintText: 'Reply to ${selected.first}…',
+              hintStyle: AETheme.syne(size: 13, color: AETheme.faint, weight: FontWeight.w400),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: InputBorder.none,
+            ),
+          ),
+        )),
+        const SizedBox(width: 10),
+        GestureDetector(
+          onTap: sending ? null : onSend,
+          child: Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              gradient: sending ? null : AETheme.indigoGradient,
+              color: sending ? AETheme.faint : null,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: sending
+                ? const Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)))
+                : const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+          ),
+        ),
+      ]),
+    ),
+  ]);
 }
