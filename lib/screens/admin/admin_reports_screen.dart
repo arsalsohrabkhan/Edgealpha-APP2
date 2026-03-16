@@ -15,7 +15,7 @@ class AdminReportsScreen extends StatelessWidget {
       backgroundColor: AETheme.bg,
       body: Column(
         children: [
-          const AdminTopBar(title: 'Compliance Reporting', subtitle: 'Generate verified reports for any client'),
+          const AdminTopBar(),
           Expanded(
             child: StreamBuilder<List<Client>>(
               stream: context.read<FirestoreService>().streamAllClients(),
