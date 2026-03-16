@@ -39,7 +39,7 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
       backgroundColor: AETheme.bg,
       body: Column(
         children: [
-          const AdminTopBar(title: 'Communications Hub', subtitle: 'All client threads'),
+          const AdminTopBar(),
           Expanded(
             child: StreamBuilder<List<Client>>(
               stream: fs.streamAllClients(),
