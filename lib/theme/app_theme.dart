@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AETheme {
   // ── Colors ────────────────────────────────────────────────
@@ -54,7 +53,8 @@ class AETheme {
   static TextStyle fraunces({
     double size = 16, FontWeight weight = FontWeight.w900,
     Color color = ink, double? letterSpacing, double? height, bool italic = false,
-  }) => GoogleFonts.playfairDisplay(
+  }) => TextStyle(
+    fontFamily: 'Fraunces',
     fontSize: size, fontWeight: weight, color: color,
     letterSpacing: letterSpacing, height: height,
     fontStyle: italic ? FontStyle.italic : FontStyle.normal,
@@ -63,8 +63,10 @@ class AETheme {
   static TextStyle syne({
     double size = 14, FontWeight weight = FontWeight.w700,
     Color color = ink, double? letterSpacing,
-  }) => GoogleFonts.syne(
-    fontSize: size, fontWeight: weight, color: color, letterSpacing: letterSpacing,
+  }) => TextStyle(
+    fontFamily: 'Syne',
+    fontSize: size, fontWeight: weight, color: color,
+    letterSpacing: letterSpacing,
   );
 
   // ── Theme ─────────────────────────────────────────────────
@@ -74,7 +76,7 @@ class AETheme {
     colorScheme: const ColorScheme.light(
       primary: indigo2, secondary: violet, surface: white, error: red,
     ),
-    textTheme: GoogleFonts.syneTextTheme(),
+    textTheme: const TextTheme().apply(fontFamily: 'Syne'),
     appBarTheme: AppBarTheme(
       backgroundColor: white, foregroundColor: ink, elevation: 0,
       systemOverlayStyle: SystemUiOverlayStyle.dark,
