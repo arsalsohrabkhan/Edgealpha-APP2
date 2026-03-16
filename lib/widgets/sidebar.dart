@@ -4,334 +4,209 @@ import 'package:provider/provider.dart';
 import '../services/firebase_service.dart';
 import '../theme/app_theme.dart';
 
+// ── Sidebar (desktop only) ────────────────────────────────
 class AESidebar extends StatelessWidget {
-  final String active; // 'dashboard' | 'trades' | 'performance' | 'reports' | 'messages'
-
+  final String active;
   const AESidebar({super.key, required this.active});
 
   @override
   Widget build(BuildContext context) {
-    final auth   = context.watch<AuthService>();
-    final client = auth.client;
-
+    final client = context.watch<AuthService>().client;
     final navItems = [
-      _NavItem(icon: '▦',  label: 'Dashboard',   route: '/dashboard'),
-      _NavItem(icon: '📊', label: 'My Trades',    route: '/trades'),
-      _NavItem(icon: '↗',  label: 'Performance',  route: '/performance'),
-      _NavItem(icon: '⊞',  label: 'Reports',      route: '/reports'),
-      _NavItem(icon: '✉',  label: 'Messages',     route: '/messages'),
+      _N('dashboard',   Icons.dashboard_rounded,       'Dashboard'),
+      _N('mytrades',    Icons.candlestick_chart_rounded,'My Trades'),
+      _N('performance', Icons.trending_up_rounded,      'Performance'),
+      _N('reports',     Icons.description_rounded,      'Reports'),
+      _N('messages',    Icons.chat_bubble_rounded,      'Messages'),
     ];
 
     return Container(
       width: 240,
-      color: AETheme.ink,
-      child: Column(
-        children: [
-          // Logo
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Color(0x10FFFFFF))),
-            ),
-            child: Row(
-              children: [
-                _LogoMark(),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    RichText(
-                      text: TextSpan(
-                        style: AETheme.fraunces(size: 17, color: Colors.white),
-                        children: const [
-                          TextSpan(text: 'Alpha'),
-                          TextSpan(
-                            text: 'Edge',
-                            style: TextStyle(color: Color(0xFF818CF8)),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      'CAPITAL',
-                      style: AETheme.syne(
-                        size: 7.5,
-                        color: const Color(0x48FFFFFF),
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Nav section label
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 8, bottom: 8),
-              children: [
-                _SectionLabel('My Account'),
-                ...navItems.map((item) => _NavTile(
-                      item:   item,
-                      active: active == item.label.toLowerCase().replaceAll(' ', ''),
-                    )),
-                _SectionLabel('Session'),
-                _NavTile(
-                  item: _NavItem(icon: '⬡', label: 'Sign Out', route: '/login'),
-                  active: false,
-                  onTap: () {
-                    context.read<AuthService>().logout();
-                    context.go('/login');
-                  },
-                ),
-              ],
-            ),
-          ),
-
-          // User bottom
-          if (client != null)
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter, end: Alignment.bottomCenter,
+          colors: [AETheme.ink, AETheme.ink2],
+        ),
+      ),
+      child: Column(children: [
+        // Logo
+        Container(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+          decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: Color(0x12FFFFFF)))),
+          child: Row(children: [
             Container(
-              padding: const EdgeInsets.all(14),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: Color(0x10FFFFFF))),
+              width: 36, height: 36,
+              decoration: BoxDecoration(
+                gradient: AETheme.indigoGradient,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Color(client.colorValue),
-                    child: Text(
-                      client.initials,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        client.fullName,
-                        style: AETheme.syne(size: 12, color: const Color(0xCCFFFFFF)),
-                      ),
-                      Text(
-                        'Private Client',
-                        style: AETheme.syne(size: 9, color: const Color(0x48FFFFFF)),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LogoMark extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 38,
-      height: 38,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.bottomLeft,
-          end: Alignment.topRight,
-          colors: [Color(0xFF3730A3), Color(0xFF4F46E5), Color(0xFF818CF8)],
-        ),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: const Icon(Icons.show_chart, color: Colors.white, size: 20),
-    );
-  }
-}
-
-class _NavItem {
-  final String icon;
-  final String label;
-  final String route;
-  const _NavItem({required this.icon, required this.label, required this.route});
-}
-
-class _NavTile extends StatelessWidget {
-  final _NavItem item;
-  final bool     active;
-  final VoidCallback? onTap;
-
-  const _NavTile({required this.item, required this.active, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap ?? () => context.go(item.route),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: active ? const Color(0x1F4F46E5) : Colors.transparent,
-          border: Border(
-            left: BorderSide(
-              color: active ? const Color(0xFF4F46E5) : Colors.transparent,
-              width: 2,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 20,
-              child: Text(
-                item.icon,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: active ? Colors.white : const Color(0x60FFFFFF),
-                ),
-              ),
+              child: const Icon(Icons.show_chart_rounded, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 10),
-            Text(
-              item.label,
-              style: AETheme.syne(
-                size: 12,
-                color: active ? Colors.white : const Color(0x60FFFFFF),
-              ),
-            ),
-          ],
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              RichText(text: TextSpan(
+                style: AETheme.fraunces(size: 16, color: Colors.white),
+                children: const [
+                  TextSpan(text: 'Alpha'),
+                  TextSpan(text: 'Edge', style: TextStyle(color: AETheme.indigo3)),
+                ],
+              )),
+              Text('CAPITAL', style: AETheme.syne(
+                  size: 7, color: const Color(0x50FFFFFF),
+                  weight: FontWeight.w800, letterSpacing: 2)),
+            ]),
+          ]),
         ),
-      ),
-    );
-  }
-}
-
-class _SectionLabel extends StatelessWidget {
-  final String label;
-  const _SectionLabel(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 4),
-      child: Text(
-        label.toUpperCase(),
-        style: AETheme.syne(
-          size: 8,
-          color: const Color(0x30FFFFFF),
-          letterSpacing: 2,
-        ),
-      ),
-    );
-  }
-}
-
-// ── Top bar reused across client screens ──────────────────
-class AETopBar extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-  final String subtitle;
-
-  const AETopBar({super.key, required this.title, required this.subtitle});
-
-  @override
-  Size get preferredSize => const Size.fromHeight(60);
-
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final dateStr = '${_weekday(now.weekday)}, ${_month(now.month)} ${now.day}, ${now.year}';
-
-    return Container(
-      height: 60,
-      decoration: const BoxDecoration(
-        color: Color(0xF7F7F5EF),
-        border: Border(bottom: BorderSide(color: Color(0x14070921))),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: AETheme.fraunces(size: 17)),
-              Text(subtitle, style: AETheme.syne(size: 11, color: AETheme.muted, weight: FontWeight.w400)),
-            ],
+        // Nav
+        Expanded(child: ListView(padding: const EdgeInsets.only(top: 12), children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 6),
+            child: Text('MY ACCOUNT', style: AETheme.syne(
+                size: 8, color: const Color(0x40FFFFFF),
+                weight: FontWeight.w800, letterSpacing: 2)),
           ),
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AETheme.bg2,
-                  borderRadius: BorderRadius.circular(7),
-                  border: Border.all(color: const Color(0x12070921)),
-                ),
-                child: Text(dateStr, style: AETheme.syne(size: 11, color: AETheme.muted, weight: FontWeight.w600)),
+          ...navItems.map((n) => _SidebarTile(item: n, active: active == n.key)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 6),
+            child: Text('SESSION', style: AETheme.syne(
+                size: 8, color: const Color(0x40FFFFFF),
+                weight: FontWeight.w800, letterSpacing: 2)),
+          ),
+          _SidebarTile(
+            item: _N('signout', Icons.logout_rounded, 'Sign Out'),
+            active: false,
+            onTap: () { context.read<AuthService>().logout(); context.go('/login'); },
+          ),
+        ])),
+        // User
+        if (client != null)
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: Color(0x12FFFFFF)))),
+            child: Row(children: [
+              CircleAvatar(
+                radius: 18, backgroundColor: Color(client.colorValue),
+                child: Text(client.initials, style: AETheme.syne(
+                    size: 11, color: Colors.white, weight: FontWeight.w800)),
               ),
               const SizedBox(width: 10),
-              _LivePill(),
-            ],
+              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(client.fullName, style: AETheme.syne(
+                    size: 12, color: const Color(0xD9FFFFFF), weight: FontWeight.w700),
+                    overflow: TextOverflow.ellipsis),
+                Text('Private Client', style: AETheme.syne(
+                    size: 9, color: const Color(0x50FFFFFF))),
+              ])),
+            ]),
           ),
-        ],
-      ),
+      ]),
     );
   }
-
-  String _weekday(int d) =>
-      ['','Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d];
-  String _month(int m) =>
-      ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m];
 }
 
-class _LivePill extends StatelessWidget {
+class _N { final String key; final IconData icon; final String label;
+  const _N(this.key, this.icon, this.label); }
+
+class _SidebarTile extends StatelessWidget {
+  final _N item; final bool active; final VoidCallback? onTap;
+  const _SidebarTile({required this.item, required this.active, this.onTap});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0x14047857),
-        border: Border.all(color: const Color(0x30047857)),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 5, height: 5,
-            decoration: const BoxDecoration(
-              color: Color(0xFF10B981),
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            'LIVE',
-            style: AETheme.syne(size: 9, color: AETheme.green, letterSpacing: 1.5),
-          ),
-        ],
+    final routes = {
+      'dashboard': '/dashboard', 'mytrades': '/trades',
+      'performance': '/performance', 'reports': '/reports', 'messages': '/messages',
+    };
+    return GestureDetector(
+      onTap: onTap ?? () => context.go(routes[item.key] ?? '/dashboard'),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+        decoration: BoxDecoration(
+          color: active ? const Color(0x1A4F46E5) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: active ? const Color(0x304F46E5) : Colors.transparent),
+        ),
+        child: Row(children: [
+          Icon(item.icon, size: 18,
+              color: active ? AETheme.indigo3 : const Color(0x60FFFFFF)),
+          const SizedBox(width: 10),
+          Text(item.label, style: AETheme.syne(
+              size: 13, weight: FontWeight.w700,
+              color: active ? Colors.white : const Color(0x70FFFFFF))),
+        ]),
       ),
     );
   }
 }
 
-// ── Scaffold wrapper for all client screens ───────────────
-class ClientScaffold extends StatelessWidget {
-  final String    active;
-  final String    title;
-  final String    subtitle;
-  final Widget    body;
+// ── Bottom Nav Bar (mobile) ───────────────────────────────
+class AEBottomNav extends StatelessWidget {
+  final String active;
+  const AEBottomNav({super.key, required this.active});
 
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      _N('dashboard',   Icons.dashboard_rounded,        'Home'),
+      _N('mytrades',    Icons.candlestick_chart_rounded, 'Trades'),
+      _N('performance', Icons.trending_up_rounded,       'Stats'),
+      _N('reports',     Icons.description_rounded,       'Reports'),
+      _N('messages',    Icons.chat_bubble_rounded,       'Chat'),
+    ];
+    final routes = ['/dashboard','/trades','/performance','/reports','/messages'];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AETheme.white,
+        boxShadow: [BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20, offset: const Offset(0, -4))],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (i) {
+              final isActive = active == items[i].key;
+              return GestureDetector(
+                onTap: () => context.go(routes[i]),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isActive ? const Color(0x124F46E5) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(items[i].icon, size: 22,
+                        color: isActive ? AETheme.indigo2 : AETheme.muted),
+                    const SizedBox(height: 3),
+                    Text(items[i].label, style: AETheme.syne(
+                        size: 9, weight: FontWeight.w700,
+                        color: isActive ? AETheme.indigo2 : AETheme.muted)),
+                  ]),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Client Scaffold ───────────────────────────────────────
+class ClientScaffold extends StatelessWidget {
+  final String active, title, subtitle;
+  final Widget body;
   const ClientScaffold({
-    super.key,
-    required this.active,
-    required this.title,
-    required this.subtitle,
-    required this.body,
+    super.key, required this.active, required this.title,
+    required this.subtitle, required this.body,
   });
 
   @override
@@ -339,33 +214,82 @@ class ClientScaffold extends StatelessWidget {
     final narrow = MediaQuery.of(context).size.width < 700;
     return Scaffold(
       backgroundColor: AETheme.bg,
-      drawer: narrow ? Drawer(child: AESidebar(active: active)) : null,
-      appBar: narrow
-          ? AppBar(
-              backgroundColor: AETheme.white,
-              title: Text(title, style: AETheme.fraunces(size: 16)),
-              leading: Builder(
-                builder: (ctx) => IconButton(
-                  icon: const Icon(Icons.menu, color: AETheme.ink),
-                  onPressed: () => Scaffold.of(ctx).openDrawer(),
-                ),
-              ),
-            )
-          : null,
-      body: Row(
-        children: [
-          if (!narrow) AESidebar(active: active),
-          Expanded(
-            child: Column(
-              children: [
-                if (!narrow)
-                  AETopBar(title: title, subtitle: subtitle),
-                Expanded(child: body),
-              ],
+      appBar: narrow ? AppBar(
+        backgroundColor: AETheme.white,
+        elevation: 0,
+        leading: Builder(builder: (ctx) => IconButton(
+          icon: const Icon(Icons.menu_rounded, color: AETheme.ink, size: 24),
+          onPressed: () => Scaffold.of(ctx).openDrawer(),
+        )),
+        title: Text(title.split('—').last.trim(),
+            style: AETheme.fraunces(size: 16)),
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0x14047857),
+              borderRadius: BorderRadius.circular(20),
             ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Container(width: 5, height: 5,
+                  decoration: const BoxDecoration(
+                      color: AETheme.green2, shape: BoxShape.circle)),
+              const SizedBox(width: 5),
+              Text('LIVE', style: AETheme.syne(
+                  size: 9, color: AETheme.green, weight: FontWeight.w800, letterSpacing: 1.5)),
+            ]),
           ),
         ],
+      ) : null,
+      drawer: narrow ? Drawer(child: AESidebar(active: active)) : null,
+      body: Row(children: [
+        if (!narrow) AESidebar(active: active),
+        Expanded(child: Column(children: [
+          if (!narrow) _TopBar(title: title, subtitle: subtitle),
+          Expanded(child: body),
+        ])),
+      ]),
+      bottomNavigationBar: narrow ? AEBottomNav(active: active) : null,
+    );
+  }
+}
+
+class _TopBar extends StatelessWidget {
+  final String title, subtitle;
+  const _TopBar({required this.title, required this.subtitle});
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    const wd = ['','Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    const mo = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return Container(
+      height: 62,
+      decoration: const BoxDecoration(
+        color: AETheme.white,
+        border: Border(bottom: BorderSide(color: Color(0x0F070921))),
       ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(children: [
+        Expanded(child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: AETheme.fraunces(size: 16)),
+            Text(subtitle, style: AETheme.syne(
+                size: 11, color: AETheme.muted, weight: FontWeight.w400)),
+          ],
+        )),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          decoration: BoxDecoration(
+            color: AETheme.bg2, borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: const Color(0x0F070921)),
+          ),
+          child: Text('${wd[now.weekday]}, ${mo[now.month]} ${now.day}',
+              style: AETheme.syne(size: 11, color: AETheme.muted, weight: FontWeight.w600)),
+        ),
+      ]),
     );
   }
 }
