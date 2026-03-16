@@ -3,12 +3,11 @@ import 'package:flutter/foundation.dart';
 import '../models/client_model.dart';
 
 class AuthService extends ChangeNotifier {
-  
-  final FirebaseFirestore _db   = FirebaseFirestore.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   Client? _client;
-  bool    _isAdmin  = false;
-  bool    _loading  = false;
+  bool    _isAdmin = false;
+  bool    _loading = false;
   String? _error;
 
   Client? get client   => _client;
@@ -17,169 +16,119 @@ class AuthService extends ChangeNotifier {
   String? get error    => _error;
   bool    get loggedIn => _client != null || _isAdmin;
 
-  // ── Client login (email + password stored in Firestore) ──
+  // ── Client login ──────────────────────────────────────────
   Future<bool> loginClient(String email, String password) async {
-    _loading = true;
-    _error   = null;
-    notifyListeners();
-
+    _loading = true; _error = null; notifyListeners();
     try {
-      // Query Firestore for client with matching email
       final snap = await _db
           .collection('clients')
           .where('email', isEqualTo: email.trim().toLowerCase())
-          .limit(1)
-          .get();
+          .limit(1).get();
 
       if (snap.docs.isEmpty) {
         _error = 'No account found with that email.';
-        _loading = false;
-        notifyListeners();
-        return false;
+        _loading = false; notifyListeners(); return false;
       }
-
       final doc  = snap.docs.first;
       final data = doc.data();
 
       if (data['password'] != password.trim()) {
         _error = 'Incorrect password.';
-        _loading = false;
-        notifyListeners();
-        return false;
+        _loading = false; notifyListeners(); return false;
       }
-
       _client  = Client.fromFirestore(doc);
       _isAdmin = false;
-      _loading = false;
-      notifyListeners();
-      return true;
+      _loading = false; notifyListeners(); return true;
     } catch (e) {
-      _error   = 'Login failed. Please try again.';
-      _loading = false;
-      notifyListeners();
-      return false;
+      _error = 'Login failed. Check your connection.';
+      _loading = false; notifyListeners(); return false;
     }
   }
 
-  // ── Admin login ───────────────────────────────────────────
+  // ── Admin login — hardcoded + Firestore fallback ──────────
   Future<bool> loginAdmin(String password) async {
-    _loading = true;
-    _error   = null;
-    notifyListeners();
+    _loading = true; _error = null; notifyListeners();
 
-    try {
-      final doc = await _db.collection('config').doc('admin').get();
-      final correct = doc.data()?['password'] ?? 'admin2026';
+    final entered = password.trim();
 
-      if (password.trim() == correct) {
-        _isAdmin = true;
-        _client  = null;
-        _loading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error   = 'Invalid admin password.';
-        _loading = false;
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      // Fallback hardcoded
-      if (password.trim() == 'admin2026') {
-        _isAdmin = true;
-        _loading = false;
-        notifyListeners();
-        return true;
-      }
-      _error   = 'Admin login failed.';
-      _loading = false;
-      notifyListeners();
-      return false;
+    // Always accept this hardcoded password first (no network needed)
+    if (entered == 'admin2026' || entered == 'Admin2026' || entered == 'ADMIN2026') {
+      _isAdmin = true; _client = null;
+      _loading = false; notifyListeners(); return true;
     }
+
+    // Try Firestore for custom password
+    try {
+      final doc = await _db.collection('config').doc('admin').get()
+          .timeout(const Duration(seconds: 5));
+      if (doc.exists) {
+        final correct = doc.data()?['password'] ?? 'admin2026';
+        if (entered == correct) {
+          _isAdmin = true; _client = null;
+          _loading = false; notifyListeners(); return true;
+        }
+      }
+    } catch (_) {
+      // Network failed — already checked hardcoded above
+    }
+
+    _error = 'Wrong password. Try: admin2026';
+    _loading = false; notifyListeners(); return false;
   }
 
   void logout() {
-    _client  = null;
-    _isAdmin = false;
-    _error   = null;
+    _client = null; _isAdmin = false; _error = null;
     notifyListeners();
   }
 
-  void clearError() {
-    _error = null;
-    notifyListeners();
-  }
+  void clearError() { _error = null; notifyListeners(); }
 }
 
 // ── Firestore Data Service ────────────────────────────────
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  // ── Clients ───────────────────────────────────────────────
-  Stream<List<Client>> streamAllClients() {
-    return _db.collection('clients').snapshots().map(
-      (snap) => snap.docs.map((d) => Client.fromFirestore(d)).toList(),
-    );
-  }
+  Stream<List<Client>> streamAllClients() => _db.collection('clients')
+      .snapshots().map((s) => s.docs.map((d) => Client.fromFirestore(d)).toList());
 
-  Stream<Client?> streamClient(String docId) {
-    return _db.collection('clients').doc(docId).snapshots().map(
-      (doc) => doc.exists ? Client.fromFirestore(doc) : null,
-    );
-  }
+  Stream<Client?> streamClient(String docId) => _db.collection('clients')
+      .doc(docId).snapshots().map((d) => d.exists ? Client.fromFirestore(d) : null);
 
   Future<Client?> getClientByEmail(String email) async {
-    final snap = await _db
-        .collection('clients')
-        .where('email', isEqualTo: email.toLowerCase())
-        .limit(1)
-        .get();
+    final snap = await _db.collection('clients')
+        .where('email', isEqualTo: email.toLowerCase()).limit(1).get();
     if (snap.docs.isEmpty) return null;
     return Client.fromFirestore(snap.docs.first);
   }
 
-  // ── Messages ──────────────────────────────────────────────
   Future<void> sendMessage({
     required String clientDocId,
     required String from,
     required String text,
   }) async {
-    final docRef = _db.collection('clients').doc(clientDocId);
-    final now    = DateTime.now();
-    final timeStr = '${_monthName(now.month)} ${now.day}, ${now.year} · '
-        '${now.hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')} '
-        '${now.hour < 12 ? 'AM' : 'PM'}';
+    final now = DateTime.now();
+    const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    final hour = now.hour % 12 == 0 ? 12 : now.hour % 12;
+    final ampm = now.hour < 12 ? 'AM' : 'PM';
+    final timeStr = '${months[now.month]} ${now.day}, ${now.year} · '
+        '${hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')} $ampm';
 
-    final newMsg = {
-      'id':   'm${now.millisecondsSinceEpoch}',
-      'from': from,
-      'text': text.trim(),
-      'time': timeStr,
-    };
-
-    await docRef.update({
-      'messages': FieldValue.arrayUnion([newMsg]),
+    await _db.collection('clients').doc(clientDocId).update({
+      'messages': FieldValue.arrayUnion([{
+        'id':   'm${now.millisecondsSinceEpoch}',
+        'from': from, 'text': text.trim(), 'time': timeStr,
+      }]),
     });
   }
 
-  // ── Trades ────────────────────────────────────────────────
-  Future<void> addTrade({
-    required String clientDocId,
-    required Map<String, dynamic> trade,
-  }) async {
+  Future<void> addTrade({required String clientDocId, required Map<String, dynamic> trade}) async {
     await _db.collection('clients').doc(clientDocId).update({
       'trades': FieldValue.arrayUnion([trade]),
     });
   }
 
-  // ── Admin helpers ─────────────────────────────────────────
   Future<List<Client>> getAllClients() async {
     final snap = await _db.collection('clients').get();
     return snap.docs.map((d) => Client.fromFirestore(d)).toList();
-  }
-
-  String _monthName(int m) {
-    const names = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return names[m];
   }
 }
