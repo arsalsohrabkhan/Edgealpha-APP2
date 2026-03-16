@@ -9,26 +9,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
-  # Firebase
   firebase_core: ^3.3.0
   firebase_auth: ^5.1.4
   cloud_firestore: ^5.2.1
-
-  # State & Navigation
   provider: ^6.1.2
   go_router: ^14.2.1
-
-  # UI & Charts
   fl_chart: ^0.68.0
   google_fonts: ^6.2.1
   flutter_animate: ^4.5.0
   shimmer: ^3.0.0
-
-  # Utilities
   intl: ^0.19.0
   shared_preferences: ^2.3.2
-  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
@@ -37,3 +28,25 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Fraunces-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Fraunces-Black.ttf
+          weight: 900
+        - asset: assets/fonts/Fraunces-BlackItalic.ttf
+          weight: 900
+          style: italic
+
+    - family: Syne
+      fonts:
+        - asset: assets/fonts/Syne-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Syne-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Syne-ExtraBold.ttf
+          weight: 800
