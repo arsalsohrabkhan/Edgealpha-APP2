@@ -23,12 +23,26 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
     final text = _ctrl.text.trim();
     if (text.isEmpty || _sending) return;
     setState(() => _sending = true);
-    await context.read<FirestoreService>().sendMessage(clientDocId: docId, from: 'admin', text: text);
-    _ctrl.clear();
-    setState(() => _sending = false);
-    await Future.delayed(const Duration(milliseconds: 150));
-    if (_scroll.hasClients) {
-      _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+    try {
+      await context.read<FirestoreService>().sendMessage(clientDocId: docId, from: 'admin', text: text);
+      _ctrl.clear();
+      await Future.delayed(const Duration(milliseconds: 150));
+      if (_scroll.hasClients) {
+        _scroll.animateTo(_scroll.position.maxScrollExtent, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send reply. Please try again.',
+                style: AETheme.syne(size: 13, color: Colors.white)),
+            backgroundColor: AETheme.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 
