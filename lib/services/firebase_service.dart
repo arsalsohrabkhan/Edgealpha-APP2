@@ -45,34 +45,37 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // ── Admin login — hardcoded + Firestore fallback ──────────
+  // ── Admin login — Firestore settings/admin, fallback to hardcoded ──
   Future<bool> loginAdmin(String password) async {
     _loading = true; _error = null; notifyListeners();
 
-    final entered = password.trim();
+    final entered = password.trim().toLowerCase();
 
-    // Always accept this hardcoded password first (no network needed)
-    if (entered == 'admin2026' || entered == 'Admin2026' || entered == 'ADMIN2026') {
+    // Try Firestore settings/admin first (this is the live password)
+    try {
+      final doc = await _db.collection('settings').doc('admin').get()
+          .timeout(const Duration(seconds: 5));
+      if (doc.exists) {
+        final correct = (doc.data()?['password'] ?? '').toString().trim().toLowerCase();
+        if (correct.isNotEmpty && entered == correct) {
+          _isAdmin = true; _client = null;
+          _loading = false; notifyListeners(); return true;
+        }
+        // Doc exists but password didn't match — fail immediately
+        _error = 'Wrong admin password.';
+        _loading = false; notifyListeners(); return false;
+      }
+    } catch (_) {
+      // Firestore unreachable — fall through to hardcoded
+    }
+
+    // Fallback: hardcoded password (works offline / if settings doc missing)
+    if (entered == 'admin2026') {
       _isAdmin = true; _client = null;
       _loading = false; notifyListeners(); return true;
     }
 
-    // Try Firestore for custom password
-    try {
-      final doc = await _db.collection('config').doc('admin').get()
-          .timeout(const Duration(seconds: 5));
-      if (doc.exists) {
-        final correct = doc.data()?['password'] ?? 'admin2026';
-        if (entered == correct) {
-          _isAdmin = true; _client = null;
-          _loading = false; notifyListeners(); return true;
-        }
-      }
-    } catch (_) {
-      // Network failed — already checked hardcoded above
-    }
-
-    _error = 'Wrong password. Try: admin2026';
+    _error = 'Wrong admin password.';
     _loading = false; notifyListeners(); return false;
   }
 
@@ -113,11 +116,21 @@ class FirestoreService {
     final timeStr = '${months[now.month]} ${now.day}, ${now.year} · '
         '${hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')} $ampm';
 
-    await _db.collection('clients').doc(clientDocId).update({
-      'messages': FieldValue.arrayUnion([{
-        'id':   'm${now.millisecondsSinceEpoch}',
-        'from': from, 'text': text.trim(), 'time': timeStr,
-      }]),
+    final newMsg = {
+      'id':   'm${now.millisecondsSinceEpoch}',
+      'from': from,
+      'text': text.trim(),
+      'time': timeStr,
+    };
+
+    // Use a transaction so we read-then-write, avoiding arrayUnion deduplication
+    // (arrayUnion drops duplicate objects — same text sent twice would be lost)
+    final ref = _db.collection('clients').doc(clientDocId);
+    await _db.runTransaction((tx) async {
+      final snap = await tx.get(ref);
+      final existing = List<dynamic>.from(snap.data()?['messages'] ?? []);
+      existing.add(newMsg);
+      tx.update(ref, {'messages': existing});
     });
   }
 
