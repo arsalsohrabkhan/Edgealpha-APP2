@@ -42,10 +42,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send message. Please try again.',
-                style: AETheme.syne(size: 13, color: Colors.white)),
+            content: Text('Send failed: $e',
+                style: AETheme.syne(size: 12, color: Colors.white)),
             backgroundColor: AETheme.red,
             behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 6),
           ),
         );
       }
