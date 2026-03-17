@@ -20,7 +20,7 @@ class _TradesScreenState extends State<TradesScreen> {
     final client = auth.client;
     if (client == null) return const SizedBox();
 
-    final docId = client.id.toString();
+    final docId = client.docId;
     final fs    = context.read<FirestoreService>();
 
     return ClientScaffold(

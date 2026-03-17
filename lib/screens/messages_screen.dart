@@ -61,7 +61,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final client = auth.client;
     if (client == null) return const SizedBox();
 
-    final docId = client.id.toString();
+    final docId = client.docId;
     final fs    = context.read<FirestoreService>();
 
     return ClientScaffold(
