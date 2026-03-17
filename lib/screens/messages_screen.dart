@@ -26,17 +26,31 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final text = _ctrl.text.trim();
     if (text.isEmpty || _sending) return;
     setState(() => _sending = true);
-    final fs = context.read<FirestoreService>();
-    await fs.sendMessage(clientDocId: docId, from: 'client', text: text);
-    _ctrl.clear();
-    setState(() => _sending = false);
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (_scroll.hasClients) {
-      _scroll.animateTo(
-        _scroll.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+    try {
+      final fs = context.read<FirestoreService>();
+      await fs.sendMessage(clientDocId: docId, from: 'client', text: text);
+      _ctrl.clear();
+      await Future.delayed(const Duration(milliseconds: 200));
+      if (_scroll.hasClients) {
+        _scroll.animateTo(
+          _scroll.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send message. Please try again.',
+                style: AETheme.syne(size: 13, color: Colors.white)),
+            backgroundColor: AETheme.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 
@@ -160,7 +174,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           color: _sending ? AETheme.faint : null,
                           borderRadius: BorderRadius.circular(14),
                           boxShadow: _sending ? [] : [
-                            BoxShadow(color: AETheme.indigo2.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4)),
+                            BoxShadow(color: AETheme.indigo2.withValues(alpha: 0.4), blurRadius: 12, offset: const Offset(0, 4)),
                           ],
                         ),
                         child: _sending
@@ -232,7 +246,7 @@ class _MessageBubble extends StatelessWidget {
                     border: isAdmin ? Border.all(color: const Color(0x10070921)) : null,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(isAdmin ? 0.05 : 0.15),
+                      color: Colors.black.withValues(alpha: isAdmin ? 0.05 : 0.15),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
