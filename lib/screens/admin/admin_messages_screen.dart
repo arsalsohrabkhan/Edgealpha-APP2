@@ -11,7 +11,7 @@ class AdminMessagesScreen extends StatefulWidget {
 }
 
 class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
-  int?   _selectedId;
+  String? _selectedId;
   final  _ctrl   = TextEditingController();
   final  _scroll = ScrollController();
   bool   _sending = false;
@@ -62,7 +62,7 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
                   return const Center(child: CircularProgressIndicator(color: AETheme.indigo2));
                 }
                 final clients = snap.data ?? [];
-                final selected = _selectedId != null ? clients.where((c) => c.id == _selectedId).firstOrNull : null;
+                final selected = _selectedId != null ? clients.where((c) => c.docId == _selectedId).firstOrNull : null;
 
                 final narrow = MediaQuery.of(context).size.width < 700;
                 
@@ -75,7 +75,7 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
                       scroll: _scroll,
                       sending: _sending,
                       onBack: () => setState(() => _selectedId = null),
-                      onSend: () => _reply(selected.id.toString()),
+                      onSend: () => _reply(selected.docId),
                     );
                   }
                   return _NarrowClientList(
@@ -116,10 +116,10 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
                               itemCount: clients.length,
                               itemBuilder: (_, i) {
                                 final c        = clients[i];
-                                final isActive = _selectedId == c.id;
+                                final isActive = _selectedId == c.docId;
                                 final unread   = c.messages.where((m) => m.isClient).length;
                                 return GestureDetector(
-                                  onTap: () => setState(() => _selectedId = c.id),
+                                  onTap: () => setState(() => _selectedId = c.docId),
                                   child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 150),
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -232,7 +232,7 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
                                             controller: _ctrl,
                                             style: AETheme.syne(size: 13),
                                             maxLines: 3, minLines: 1,
-                                            onSubmitted: (_) => _reply(selected.id.toString()),
+                                            onSubmitted: (_) => _reply(selected.docId),
                                             decoration: InputDecoration(
                                               hintText: 'Reply to ${selected.first}…',
                                               hintStyle: AETheme.syne(size: 13, color: AETheme.faint, weight: FontWeight.w400),
@@ -244,7 +244,7 @@ class _AdminMessagesScreenState extends State<AdminMessagesScreen> {
                                       ),
                                       const SizedBox(width: 10),
                                       GestureDetector(
-                                        onTap: _sending ? null : () => _reply(selected.id.toString()),
+                                        onTap: _sending ? null : () => _reply(selected.docId),
                                         child: Container(
                                           width: 44, height: 44,
                                           decoration: BoxDecoration(
@@ -334,8 +334,8 @@ class _AdminMsgBubble extends StatelessWidget {
 // ── Narrow (phone) client list ────────────────────────────────
 class _NarrowClientList extends StatelessWidget {
   final List<Client> clients;
-  final int? selectedId;
-  final void Function(int) onSelect;
+  final String? selectedId;
+  final void Function(String) onSelect;
   const _NarrowClientList({required this.clients, required this.selectedId, required this.onSelect});
   @override
   Widget build(BuildContext context) => ListView.builder(
@@ -344,7 +344,7 @@ class _NarrowClientList extends StatelessWidget {
     itemBuilder: (_, i) {
       final c = clients[i];
       return GestureDetector(
-        onTap: () => onSelect(c.id),
+        onTap: () => onSelect(c.docId),
         child: Container(
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(16),
