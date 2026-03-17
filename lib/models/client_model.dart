@@ -93,6 +93,7 @@ class AllocationSlice {
 // ── Client Model (raw) ─────────────────────────────────────
 class Client {
   final int id;
+  final String docId; // raw Firestore document ID — use this for all DB operations
   final String first;
   final String last;
   final String email;
@@ -122,6 +123,7 @@ class Client {
 
   const Client({
     required this.id,
+    required this.docId,
     required this.first,
     required this.last,
     required this.email,
@@ -162,6 +164,7 @@ class Client {
 
     return _enrich(
       id:       int.tryParse(doc.id) ?? 0,
+      docId:    doc.id,
       first:    m['first']    ?? '',
       last:     m['last']     ?? '',
       email:    m['email']    ?? '',
@@ -181,6 +184,7 @@ class Client {
   // Mirror of enrichClient() from clients-data.js
   static Client _enrich({
     required int id,
+    required String docId,
     required String first,
     required String last,
     required String email,
@@ -258,7 +262,7 @@ class Client {
     } catch (_) {}
 
     return Client(
-      id: id, first: first, last: last, email: email,
+      id: id, docId: docId, first: first, last: last, email: email,
       password: password, phone: phone, initials: initials,
       colorValue: colorVal, status: status, risk: risk,
       joined: joined, capital: capital, trades: trades, messages: messages,
