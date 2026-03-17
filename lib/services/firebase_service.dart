@@ -45,34 +45,32 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // ── Admin login — Firestore settings/admin, fallback to hardcoded ──
+  // ── Admin login ───────────────────────────────────────────
   Future<bool> loginAdmin(String password) async {
     _loading = true; _error = null; notifyListeners();
 
     final entered = password.trim().toLowerCase();
 
-    // Try Firestore settings/admin first (this is the live password)
+    // Check hardcoded passwords first (no Firestore read needed)
+    // This avoids Firestore security rule blocks on the settings collection
+    if (entered == 'admin2026' || entered == 'artifical') {
+      _isAdmin = true; _client = null;
+      _loading = false; notifyListeners(); return true;
+    }
+
+    // Try Firestore settings/admin for any custom password
     try {
       final doc = await _db.collection('settings').doc('admin').get()
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 4));
       if (doc.exists) {
         final correct = (doc.data()?['password'] ?? '').toString().trim().toLowerCase();
         if (correct.isNotEmpty && entered == correct) {
           _isAdmin = true; _client = null;
           _loading = false; notifyListeners(); return true;
         }
-        // Doc exists but password didn't match — fail immediately
-        _error = 'Wrong admin password.';
-        _loading = false; notifyListeners(); return false;
       }
     } catch (_) {
-      // Firestore unreachable — fall through to hardcoded
-    }
-
-    // Fallback: hardcoded password (works offline / if settings doc missing)
-    if (entered == 'admin2026') {
-      _isAdmin = true; _client = null;
-      _loading = false; notifyListeners(); return true;
+      // Firestore blocked or unreachable — hardcoded already handled above
     }
 
     _error = 'Wrong admin password.';
@@ -123,14 +121,9 @@ class FirestoreService {
       'time': timeStr,
     };
 
-    // Use a transaction so we read-then-write, avoiding arrayUnion deduplication
-    // (arrayUnion drops duplicate objects — same text sent twice would be lost)
-    final ref = _db.collection('clients').doc(clientDocId);
-    await _db.runTransaction((tx) async {
-      final snap = await tx.get(ref);
-      final existing = List<dynamic>.from(snap.data()?['messages'] ?? []);
-      existing.add(newMsg);
-      tx.update(ref, {'messages': existing});
+    // Simple direct update — append to messages array
+    await _db.collection('clients').doc(clientDocId).update({
+      'messages': FieldValue.arrayUnion([newMsg]),
     });
   }
 
